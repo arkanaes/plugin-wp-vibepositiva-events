@@ -80,6 +80,21 @@ jQuery(document).ready(function ($) {
         }, 'json');
     });
 
+    $('.criar-evento').on('click', function () {
+        const dados = $('#form-criar-evento').serialize();
+      
+        // Fazer requisição AJAX para salvar os dados
+        $.post(ajaxurl, {
+            action: 'criar_evento',
+            dados: dados,
+        }, function (resposta) {
+            alert(resposta.data.message);
+            if (resposta.success) {
+                location.reload();
+            }
+        }, 'json');
+    });
+
     let frame; // Referência para o Media Frame
 
     // Abrir a Media Library ao clicar no botão

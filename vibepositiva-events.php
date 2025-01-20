@@ -59,6 +59,91 @@ function events_plugin_deletar_tabela() {
 // Registrar a função para ser executada ao desinstalar o plugin
 register_uninstall_hook(__FILE__, 'events_plugin_deletar_tabela');
 
+function vibepositiva_events_add_html() {
+    ?>
+    <div class="wrap" style="max-width: 1200px; margin: 0 auto; padding-right: 10px;">
+        <h1 class="wp-heading-inline">Adicionar Novo Evento</h1>
+
+        <form id="form-criar-evento">
+            <?php
+            // Usar o campo nonce para segurança
+            // settings_fields('vibepositiva_events_options_group');
+            ?>
+
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="evento_name">Nome do Evento</label></th>
+                    <td><input type="text" id="evento_name" name="name" class="regular-text" required></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="evento_price">Preço</label></th>
+                    <td><input type="number" id="evento_price" name="price" class="regular-text" step="0.01" min="0" required></td>
+                </tr>
+                <!-- <tr>
+                    <th scope="row"><label for="evento_price">Preço</label></th>
+                    <td><input type="number" id="evento_price" name="evento_price" class="regular-text" step="0.01" min="0" required></td>
+                </tr> -->
+
+                <tr>
+                    <th scope="row"><label for="evento_path_pag">Caminho da Página</label></th>
+                    <td><input type="text" id="evento_path_pag" name="path" class="regular-text" required></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="evento_image">Imagem</label></th>
+                    <td>
+                        <input type="text" id="evento_image" name="image" class="regular-text" readonly style="background-color: white;">
+                        <input type="button" class="button" value="Selecionar Imagem" id="select_image_button">
+                        <div id="image_preview" style="margin-top: 10px;">
+                            <img id="image_preview_img" src="" style="max-width: 200px; display: none;">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="evento_description">Descrição</label></th>
+                    <td><textarea id="evento_description" name="description" class="large-text" rows="5" required></textarea></td>
+                </tr>
+            </table>
+            <button class="button button-primary criar-evento" type="button">
+                <i class="fa-regular fa-floppy-disk"></i>
+                Criar Evento
+            </button>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            var mediaFrame;
+
+            // Selecionar imagem da biblioteca de mídia
+            $('#select_image_button').on('click', function(e) {
+                e.preventDefault();
+
+                if (mediaFrame) {
+                    mediaFrame.open();
+                    return;
+                }
+
+                mediaFrame = wp.media({
+                    title: 'Selecione ou Envie uma Imagem',
+                    button: {
+                        text: 'Usar esta Imagem'
+                    },
+                    multiple: false
+                });
+
+                mediaFrame.on('select', function() {
+                    var attachment = mediaFrame.state().get('selection').first().toJSON();
+                    $('#evento_image').val(attachment.url);
+                    $('#image_preview_img').attr('src', attachment.url).show();
+                });
+
+                mediaFrame.open();
+            });
+        });
+    </script>
+
+    <?php
+}
 
 function vibepositiva_events_options_page_html() {
     global $wpdb;
@@ -174,6 +259,15 @@ function vibepositiva_events_options_page_html() {
 
 function carregar_scripts_admin() {
     wp_enqueue_media(); // Carrega os scripts necessários para a Media Library
+
+    wp_enqueue_style(
+        'bootstrap-cdn', // Handle para o CSS
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css', // URL do CSS
+        array(), // Dependências (não há nenhuma)
+        '6.7.2', // Versão do CSS
+        'all' // Tipo de mídia
+    );
+
     wp_enqueue_script(
         'sweetalert2', // Nome único para o script
         'https://cdn.jsdelivr.net/npm/sweetalert2@11', // URL da CDN
@@ -181,10 +275,24 @@ function carregar_scripts_admin() {
         null, // Versão (null usa a última versão)
         true // Coloca o script no final do body
     );
+
     wp_enqueue_script( 'custom-admin-script', plugin_dir_url(__FILE__) . '/js/admin.js', array( 'jquery','sweetalert2'), '1.0', true );
     wp_enqueue_style( 'custom-admin-style', plugin_dir_url(__FILE__) . '/css/admin.css' );
 }
 add_action( 'admin_enqueue_scripts', 'carregar_scripts_admin' );
+
+// Hook into the admin_head action to run your code in the admin area
+
+
+function wpdocs_admin_code() {
+
+
+
+
+    // More conditions can be added as needed
+}
+add_action( 'admin_head', 'wpdocs_admin_code' );
+
 
 function salvar_evento_ajax() {
     global $wpdb;
@@ -212,8 +320,47 @@ function salvar_evento_ajax() {
 }
 add_action( 'wp_ajax_salvar_evento', 'salvar_evento_ajax' );
 
+function criar_evento_ajax() {
+    global $wpdb;
+
+    $nome_tabela = $wpdb->prefix . 'events'; // Nome da tabela
+
+    $dados = $_POST['dados'];
+    parse_str($dados, $dados_array); // Converte os dados da string para um array
+
+    //Insere os dados no banco de dados
+    $resultado = $wpdb->insert(
+        $nome_tabela,
+        array(
+            'name'        => sanitize_text_field($dados_array['name']),
+            'description' => sanitize_textarea_field($dados_array['description']),
+            'enabled'     => isset($dados_array['enabled']) ? 1 : 0,
+            'image'       => esc_url_raw($dados_array['image']),
+            'price'       => floatval($dados_array['price']),
+            'path_pag'    => sanitize_text_field($dados_array['path_pag']),
+        ),
+        array(
+            '%s', // Formato do campo 'name'
+            '%s', // Formato do campo 'description'
+            '%d', // Formato do campo 'enabled'
+            '%s', // Formato do campo 'image'
+            '%f', // Formato do campo 'price'
+            '%s', // Formato do campo 'path_pag'
+        )
+    );
+
+    //Verifica se a inserção foi bem-sucedida
+    if ($resultado) {
+        wp_send_json_success(array('message' => 'Evento criado com sucesso!'));
+    } else {
+        wp_send_json_error(array('message' => 'Erro ao criar o evento.'));
+    }
+}
+add_action( 'wp_ajax_criar_evento', 'criar_evento_ajax' );
+
 
 function vibepositiva_events_options_page() {
+
     add_menu_page(
         'Vibe Positiva - Eventos', // Título da página
         'Eventos', // Título do menu
@@ -223,8 +370,30 @@ function vibepositiva_events_options_page() {
         plugin_dir_url(__FILE__) . 'images/person-hiking.svg', // Ícone do menu
         20 // Posição no menu
     );
+
+    // Adicionar submenu 1
+    add_submenu_page(
+        'vibepositivamenueventos', // Slug do menu principal
+        'Lista de Eventos', // Título da página do submenu
+        'Lista', // Título do item do submenu
+        'manage_options', // Capacidade necessária
+        'vibe-positiva-events-lista-de-eventos', // Slug da página do submenu
+        'vibepositiva_events_options_page_html' // Função de callback para renderizar o conteúdo
+    );
+    add_submenu_page(
+        'vibepositivamenueventos', // Slug do menu principal
+        'Adicionar Evento', // Título da página do submenu
+        'Adicionar', // Título do item do submenu
+        'manage_options', // Capacidade necessária
+        'vibe-positiva-events-lista-de-eventos2', // Slug da página do submenu
+        'vibepositiva_events_add_html' // Função de callback para renderizar o conteúdo
+    );
+
+    //Remove o Menu Principal dos Sub-menus
+    remove_submenu_page('vibepositivamenueventos', 'vibepositivamenueventos');
 }
 
+// Adiciona Menu de Opções
 add_action( 'admin_menu', 'vibepositiva_events_options_page' );
 
 
@@ -259,139 +428,3 @@ function excluir_evento_ajax() {
 }
 add_action( 'wp_ajax_excluir_evento', 'excluir_evento_ajax' );
 
-//  add_menu_page(
-//     'Eventos',
-//     'Eventos',
-//     'manage_options',
-//     'events',
-//  );
-
-// // Registra o custom post type "Atividades"
-// function atividades_plugin_register_post_type() {
-//     $labels = array(
-//         'name'                  => 'Atividades',
-//         'singular_name'         => 'Atividade',
-//         'menu_name'             => 'Atividades',
-//         'name_admin_bar'        => 'Atividade',
-//         'add_new'               => 'Adicionar Nova',
-//         'add_new_item'          => 'Adicionar Nova Atividade',
-//         'new_item'              => 'Nova Atividade',
-//         'edit_item'             => 'Editar Atividade',
-//         'view_item'             => 'Ver Atividade',
-//         'all_items'             => 'Todas as Atividades',
-//         'search_items'          => 'Procurar Atividades',
-//         'not_found'             => 'Nenhuma atividade encontrada.',
-//         'not_found_in_trash'    => 'Nenhuma atividade encontrada na lixeira.',
-//         'featured_image'        => 'Imagem destacada',
-//         'set_featured_image'    => 'Definir imagem destacada',
-//         'remove_featured_image' => 'Remover imagem destacada',
-//         'use_featured_image'    => 'Usar como imagem destacada',
-//     );
-
-//     $args = array(
-//         'labels'             => $labels,
-//         'public'             => true,
-//         'show_ui'            => true,
-//         'show_in_menu'       => true,
-//         'show_in_admin_bar'  => true,
-//         'menu_position'      => 5,
-//         'supports'           => array( 'title', 'editor', 'thumbnail' ),
-//         'has_archive'        => true,
-//         'rewrite'            => array( 'slug' => 'atividades' ),
-//     );
-
-//     register_post_type( 'atividade', $args );
-// }
-// add_action( 'init', 'atividades_plugin_register_post_type' );
-
-// // Adiciona o campo "Preço" ao custom post type "Atividades"
-// function atividades_plugin_add_meta_boxes() {
-//     add_meta_box(
-//         'atividade_preco',
-//         'Preço da Atividade',
-//         'atividades_plugin_preco_callback',
-//         'atividade',
-//         'side',
-//         'default'
-//     );
-// }
-// add_action( 'add_meta_boxes', 'atividades_plugin_add_meta_boxes' );
-
-// // Função para renderizar o campo de preço
-// function atividades_plugin_preco_callback( $post ) {
-//     $preco = get_post_meta( $post->ID, '_atividade_preco', true );
-//     echo '<input type="text" name="atividade_preco" value="' . esc_attr( $preco ) . '" />';
-// }
-
-// // Salva o campo "Preço"
-// function atividades_plugin_save_post( $post_id ) {
-//     if ( ! isset( $_POST['atividade_preco'] ) ) {
-//         return;
-//     }
-//     $preco = sanitize_text_field( $_POST['atividade_preco'] );
-//     update_post_meta( $post_id, '_atividade_preco', $preco );
-// }
-// add_action( 'save_post', 'atividades_plugin_save_post' );
-
-// // Adiciona um campo "Ativo/Inativo" com checkbox
-// function atividades_plugin_add_active_field() {
-//     add_meta_box(
-//         'atividade_ativo',
-//         'Atividade Ativa?',
-//         'atividades_plugin_active_callback',
-//         'atividade',
-//         'side',
-//         'default'
-//     );
-// }
-// add_action( 'add_meta_boxes', 'atividades_plugin_add_active_field' );
-
-// function atividades_plugin_active_callback( $post ) {
-//     $ativo = get_post_meta( $post->ID, '_atividade_ativo', true );
-//     echo '<input type="checkbox" name="atividade_ativo" ' . checked( $ativo, 'on', false ) . ' /> Ativa';
-// }
-
-// function atividades_plugin_save_active_field( $post_id ) {
-//     if ( isset( $_POST['atividade_ativo'] ) ) {
-//         update_post_meta( $post_id, '_atividade_ativo', 'on' );
-//     } else {
-//         delete_post_meta( $post_id, '_atividade_ativo' );
-//     }
-// }
-// add_action( 'save_post', 'atividades_plugin_save_active_field' );
-
-// // Exibe as atividades na página inicial
-// function atividades_plugin_display_atividades() {
-//     $args = array(
-//         'post_type'      => 'atividade',
-//         'posts_per_page' => -1,
-//         'meta_key'       => '_atividade_ativo',
-//         'meta_value'     => 'on',
-//     );
-
-//     $atividades = new WP_Query( $args );
-
-//     if ( $atividades->have_posts() ) {
-//         echo '<ul>';
-//         while ( $atividades->have_posts() ) {
-//             $atividades->the_post();
-//             $preco = get_post_meta( get_the_ID(), '_atividade_preco', true );
-//             $path = get_permalink();
-//             $imagem = get_the_post_thumbnail_url();
-
-//             echo '<li>';
-//             if ( $imagem ) {
-//                 echo '<img src="' . esc_url( $imagem ) . '" alt="' . get_the_title() . '" />';
-//             }
-//             echo '<h3>' . get_the_title() . '</h3>';
-//             echo '<p>' . get_the_excerpt() . '</p>';
-//             echo '<p>Preço: ' . esc_html( $preco ) . '</p>';
-//             echo '<a href="' . esc_url( $path ) . '">Ver mais</a>';
-//             echo '</li>';
-//         }
-//         echo '</ul>';
-//     }
-
-//     wp_reset_postdata();
-// }
-// add_action( 'wp_footer', 'atividades_plugin_display_atividades' );
