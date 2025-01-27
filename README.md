@@ -6,6 +6,7 @@ Esse plugin serve para poder criar eventos de uma página relacionada a aventura
 ### Características:
 - Tabela no banco separada das do Wordpress Padrão.
 - Somente usuários Admins podem ver/adicionar eventos.
+- Após ativação do plugin o mesmo cria uma tabela chamada wp_events onde salva os eventos criados.
 
 ### Extensões:
 - [Font Awesome](https://fontawesome.com/)
