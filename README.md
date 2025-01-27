@@ -22,3 +22,4 @@ Esse plugin serve para poder criar eventos de uma página relacionada a aventura
 - Teve horas que eu escrevi vibepositiva e outras vibe_positiva. Então, devo corrigir isso em um futuro.
 - Melhorar responsividade do modal que abre para editar um evento, usar biblioteca [Thickbox](https://codex.wordpress.org/Javascript_Reference/ThickBox)
 - Quem sabe em um futuro adicionar funcionalidade de nível de dificuldade no evento.
+- Licença do software, fazer.
