@@ -30,14 +30,25 @@ function vibepositiva_events_create_event_html()
                     <td><input type="text" id="page_path" name="page_path" class="regular-text" required placeholder="/rapel-cachoeira-do-quince"></td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="image">Imagem</label></th>
+                    <th>    
+                        <label for="image">Imagem:</label>
+                    </th>
+                    <td>
+                        <input type="hidden" id="image" name="image">
+                        <button type="button" id="select-image" class="button" style="background-color: #2271b1; color: #fff;" value="Selecionar Imagem">Selecionar Imagem</button>
+                        <div id="preview-image" style="margin-top: 10px;">
+                            <img src="" alt="Pré-visualização" style="width: 100%; max-width:500px; display: none;">
+                        </div>
+                    </td>
+                    <!-- <th scope="row"><label for="image">Imagem</label></th>
                     <td>
                         <input type="text" id="image" name="image" class="regular-text" readonly style="background-color: #fff; margin-bottom: 5px;">
                         <input type="button" class="button" style="background-color: #2271b1; color: #fff;" value="Selecionar Imagem" id="select_image_button">
                         <div id="image_preview" style="margin-top: 10px;">
                             <img id="image_preview_img" src="" style="max-width: 200px; display: none;">
                         </div>
-                    </td>
+                    </td> -->
+                    
                 </tr>
                 <tr>
                     <th scope="row"><label for="description">Descrição</label></th>

@@ -46,6 +46,72 @@ function create_event_ajax()
     if ($resultado) {
         wp_send_json_success(array('message' => 'Evento criado com sucesso!'));
     } else {
-        wp_send_json_error(array('message' => 'Erro ao criar o evento.'));
+        wp_send_json_error(array('message' => $wpdb->last_error ?: 'Erro ao criar o evento.'));
+    }
+}
+
+/**
+ * Função de callback para atualizar um evento
+ */
+function update_event_ajax() {
+    global $wpdb;
+
+    $nome_tabela = $wpdb->prefix . 'events';
+
+    $data = $_POST['data'];
+
+    parse_str( $data, $data_array );
+
+    $resultado = $wpdb->update(
+        $nome_tabela,
+        array(
+            'title'       => sanitize_text_field( $data_array['title'] ),
+            'description' => sanitize_textarea_field( $data_array['description'] ),
+            'enabled'     => isset( $data_array['enabled'] ) ? 1 : 0,
+            'event_date'  => sanitize_text_field($data_array['event_date']),
+            'image'       => esc_url_raw( $data_array['image'] ),
+            'price'       => floatval( $data_array['price'] ),
+            'page_path'    => sanitize_text_field( $data_array['page_path'] ),
+        ),
+        array( 'id' => intval( $data_array['id'] ) ),
+        array( '%s', '%s', '%d', '%s', '%s', '%f', '%s' ),
+        array( '%d' )
+    );
+
+    //Verifica se a inserção foi bem-sucedida
+    if ($resultado) {
+        wp_send_json_success( array( 'message' => 'Evento atualizado com sucesso!' ) );
+    } else {
+        wp_send_json_error(array('message' => $wpdb->last_error ?: 'Não foi possível atualizar o evento.'));
+    }
+}
+
+function delete_event_ajax() {
+    global $wpdb;
+
+    // Nome da tabela
+    $nome_tabela = $wpdb->prefix . 'events';
+
+    // Obter o ID enviado via AJAX
+    if (isset($_POST['id']) && !empty($_POST['id'])) {
+        $id = intval($_POST['id']); // Sanitizar o ID
+
+        // Deletar o registro do banco de dados
+        $excluded = $wpdb->delete(
+            $nome_tabela,           // Nome da tabela
+            array('id' => $id),     // Condição (WHERE id = $id)
+            array('%d')             // Formato do ID
+        );
+
+        if ($excluded) {
+            // Sucesso ao deletar
+            wp_send_json_success(array('message' => 'Evento excluído com sucesso!'));
+        } else {
+            // Falha ao deletar
+            wp_send_json_error(array('message' => $wpdb->last_error ?: 'Não foi possível excluir o evento.'));
+        }
+    } else {
+        // ID não foi enviado
+        wp_send_json_error(array('message' => 'ID do evento não foi fornecido.'));
     }
 }

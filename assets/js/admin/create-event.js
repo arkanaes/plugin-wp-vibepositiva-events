@@ -1,7 +1,10 @@
 jQuery(document).ready(function ($) {
     $('.btn-create-event').on('click', function () {
         const dados = $('#form-create_event').serialize();
-
+        console.log(dados)
+        /**
+         * Swal.fire popup de confirmação
+         */
         Swal.fire({
             text: "Você deseja criar esse Evento?",
             icon: "warning",
@@ -18,6 +21,7 @@ jQuery(document).ready(function ($) {
                     action: 'create_event',
                     dados: dados,
                 }, function (response) {
+                    // Swal.fire popup de confirmação
                     Swal.fire({
                         toast: true,
                         position: 'bottom-end',
@@ -37,9 +41,6 @@ jQuery(document).ready(function ($) {
         });
     });
 });
-
-
-
 
 
 

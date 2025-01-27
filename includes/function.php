@@ -1,13 +1,15 @@
 <?php
 
-// Html da página de criar evento
-require_once plugin_dir_path(dirname(__FILE__)) . 'templates/admin/create-event.php';
+// Html das páginas criar evento e ver eventos
+require_once plugin_dir_path(dirname(__FILE__)) . 'views/admin/create-event.php';
+
+require_once 'class-vibepositiva-events-list-table.php';
 
 /**
  * Função de callback para registra os menus de opções do plugin
  */
-function vibepositiva_events_register_menus() {
-
+function vibepositiva_events_register_menus()
+{
     add_menu_page(
         'Vibe Positiva - Eventos', // Título da página
         'Eventos', // Título do menu
@@ -25,7 +27,7 @@ function vibepositiva_events_register_menus() {
         'Ver Eventos', // Título do item do submenu
         'manage_options', // Capacidade necessária
         'vibe-positiva-events-see-events', // Slug da página do submenu
-        'vibepositiva_events_options_page_html' // Função de callback para renderizar o conteúdo
+        'vibepositiva_events_see_events_html' // Função de callback para renderizar o conteúdo
     );
 
     add_submenu_page(
@@ -44,11 +46,12 @@ function vibepositiva_events_register_menus() {
 /**
  * Função de callback para carregar os styles e scripts do plugin
  */
-function vibepositiva_admin_assets() {
+function vibepositiva_admin_assets()
+{
     // Verifica se a página atual é a página do plugin
     $currentScreen = get_current_screen();
-
-    if( $currentScreen->id === "eventos_page_vibe-positiva-events-create-events" || $currentScreen->id === "eventos_page_vibe-positiva-events-see-events") {
+    // Verifica se a página atual é a página de criar evento ou ver eventos
+    if ($currentScreen->id === "eventos_page_vibe-positiva-events-create-events" || $currentScreen->id === "eventos_page_vibe-positiva-events-see-events") {
         wp_enqueue_media(); // Carrega os scripts necessários para a Media Library
 
         wp_enqueue_style(
@@ -58,17 +61,27 @@ function vibepositiva_admin_assets() {
             '6.7.2', // Versão do CSS
             'all' // Tipo de mídia
         );
-        wp_enqueue_style( 'custom-admin-style', plugin_dir_url(__FILE__) . '/css/admin.css' );
+        wp_enqueue_style('custom-admin-style', plugin_dir_url(dirname(__FILE__)) . 'assets/css/admin/see-events.css');
 
         wp_enqueue_script(
             'sweetalert2', // Nome único para o script
             'https://cdn.jsdelivr.net/npm/sweetalert2@11', // URL da CDN
             array(), // Dependências (se precisar, como jQuery)
-            null, 
+            null,
             true // Coloca o script no final do body
         );
-        
-        // wp_enqueue_script( 'custom-admin-script', plugin_dir_url(__FILE__) . '/js/admin.js', array( 'jquery','sweetalert2'), '1.0', true );
-        wp_enqueue_script( 'custom-admin-script', plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin/create-event.js', array( 'jquery','sweetalert2'), '1.0', true );
+
+        wp_enqueue_script('see-events-script', plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin/see-events.js', array('jquery', 'sweetalert2'), '1.0', true);
+        wp_enqueue_script('create-event-script', plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin/create-event.js', array('jquery', 'sweetalert2'), '1.0', true);
     }
+}
+
+
+function vibepositiva_events_see_events_html()
+{
+    $vibe_positiva_events_list_table = new Vibe_Positiva_Events_List_Table();
+
+    $vibe_positiva_events_list_table->prepare_items();
+
+    include plugin_dir_path(dirname(__FILE__)) . 'views/admin/see-events.php';
 }
