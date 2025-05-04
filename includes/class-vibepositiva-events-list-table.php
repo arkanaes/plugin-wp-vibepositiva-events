@@ -179,7 +179,7 @@ class Vibe_Positiva_Events_List_Table extends WP_List_Table
 		$order   = isset($_GET['order']) ? $_GET['order'] : 'asc';
 
 		// Paginação
-		$per_page     = 2;
+		$per_page     = 10;
 		$current_page = $this->get_pagenum();
 		$offset       = ($current_page - 1) * $per_page;
 

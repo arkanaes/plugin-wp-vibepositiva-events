@@ -39,16 +39,7 @@ function vibepositiva_events_create_event_html()
                         <div id="preview-image" style="margin-top: 10px;">
                             <img src="" alt="Pré-visualização" style="width: 100%; max-width:500px; display: none;">
                         </div>
-                    </td>
-                    <!-- <th scope="row"><label for="image">Imagem</label></th>
-                    <td>
-                        <input type="text" id="image" name="image" class="regular-text" readonly style="background-color: #fff; margin-bottom: 5px;">
-                        <input type="button" class="button" style="background-color: #2271b1; color: #fff;" value="Selecionar Imagem" id="select_image_button">
-                        <div id="image_preview" style="margin-top: 10px;">
-                            <img id="image_preview_img" src="" style="max-width: 200px; display: none;">
-                        </div>
-                    </td> -->
-                    
+                    </td>                    
                 </tr>
                 <tr>
                     <th scope="row"><label for="description">Descrição</label></th>
@@ -66,8 +57,7 @@ function vibepositiva_events_create_event_html()
         jQuery(document).ready(function($) {
             var mediaFrame;
 
-            // Selecionar imagem da biblioteca de mídia
-            $('#select_image_button').on('click', function(e) {
+            $('#select-image').on('click', function(e) {
                 e.preventDefault();
 
                 if (mediaFrame) {
@@ -85,8 +75,8 @@ function vibepositiva_events_create_event_html()
 
                 mediaFrame.on('select', function() {
                     var attachment = mediaFrame.state().get('selection').first().toJSON();
-                    $('#evento_image').val(attachment.url);
-                    $('#image_preview_img').attr('src', attachment.url).show();
+                    $('#image').val(attachment.url);
+                    $('#preview-image img').attr('src', attachment.url).show();
                 });
 
                 mediaFrame.open();

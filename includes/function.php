@@ -61,7 +61,6 @@ function vibepositiva_admin_assets()
             '6.7.2', // Versão do CSS
             'all' // Tipo de mídia
         );
-        wp_enqueue_style('custom-admin-style', plugin_dir_url(dirname(__FILE__)) . 'assets/css/admin/see-events.css');
 
         wp_enqueue_script(
             'sweetalert2', // Nome único para o script
@@ -71,7 +70,14 @@ function vibepositiva_admin_assets()
             true // Coloca o script no final do body
         );
 
+    }
+
+    if ($currentScreen->id === "eventos_page_vibe-positiva-events-see-events") {
+        wp_enqueue_style('custom-admin-style', plugin_dir_url(dirname(__FILE__)) . 'assets/css/admin/see-events.css');
         wp_enqueue_script('see-events-script', plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin/see-events.js', array('jquery', 'sweetalert2'), '1.0', true);
+    }
+
+    if ($currentScreen->id === "eventos_page_vibe-positiva-events-create-events") {
         wp_enqueue_script('create-event-script', plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin/create-event.js', array('jquery', 'sweetalert2'), '1.0', true);
     }
 }
